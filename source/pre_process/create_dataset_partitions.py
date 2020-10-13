@@ -29,6 +29,10 @@ def main(config):
     img_list.sort()
     mask_list.sort()
 
+    # uncomment for lung cancer
+    # img_list = [p.split(".png")[0].split('_mask')[0] + ".png" for p in mask_list]
+
+
     num_total = len(img_list)
     num_train = int((config.train_ratio/(config.train_ratio+config.valid_ratio+config.test_ratio))*num_total)
     num_valid = int((config.valid_ratio/(config.train_ratio+config.valid_ratio+config.test_ratio))*num_total)
@@ -80,7 +84,7 @@ def main(config):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
-    base_path = "/home/patcha/Datasets/Carvana"
+    base_path = "/home/patcha/Datasets/X-raySeg"
 
     
     # model hyper-parameters
@@ -89,8 +93,8 @@ if __name__ == '__main__':
     parser.add_argument('--test_ratio', type=float, default=0.2)
 
     # data path
-    parser.add_argument('--origin_data_path', type=str, default='/home/patcha/Datasets/Carvana/imgs')
-    parser.add_argument('--origin_GT_path', type=str, default='/home/patcha/Datasets/Carvana/masks')
+    parser.add_argument('--origin_data_path', type=str, default='/home/patcha/Datasets/X-raySeg/imgs')
+    parser.add_argument('--origin_GT_path', type=str, default='/home/patcha/Datasets/X-raySeg/masks')
 
     parser.add_argument('--train_path', type=str, default=f'{base_path}/train/')
     parser.add_argument('--train_GT_path', type=str, default=f'{base_path}/train_GT/')

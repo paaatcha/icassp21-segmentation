@@ -34,7 +34,7 @@ def get_kernel (kernel_name="haar", reverse=False):
 
 class dwt (torch.nn.Module):
 
-    def __init__(self, kernel_name='haar'):
+    def __init__(self, kernel_name='db3'):
         super(dwt, self).__init__()
         self.model, self.kernel_shape = self.init_depthwise(get_kernel(kernel_name).clone().detach())
         self.freeze_layers()

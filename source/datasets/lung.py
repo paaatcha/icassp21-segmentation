@@ -11,7 +11,7 @@ import os
 from glob import glob
 
 
-class LUNADataset(data.Dataset):
+class LungDataset(data.Dataset):
 
     def __init__(self, imgs_dir, masks_dir, mode, size=None, prob_aug=0.5, mask_suffix=''):
         self.imgs_dir = imgs_dir
@@ -42,14 +42,34 @@ class LUNADataset(data.Dataset):
         mask = Image.open(mask_file[0])
         img = Image.open(img_file[0])
 
-        print(np.array(img))
 
         if self.mode == 'train' and np.random.rand() <= self.prob_aug:
             _p = 0.5
 
+            # Center crop
+            if np.random.rand() <= _p:
+                _aux = 1 - (np.random.rand() * 0.35)
+                img = TF.center_crop(img, int(_aux * max(img.size)))
+                mask = TF.center_crop(mask, int(_aux * max(mask.size)))
+
+            # Brightness
+            if np.random.rand() <= _p:
+                _aux = 1 - (np.random.rand() * 0.4)
+                img = TF.adjust_brightness(img, _aux)
+
+            # Hue
+            if np.random.rand() <= _p:
+                _aux = np.random.rand() * 0.4
+                img = TF.adjust_hue(img, _aux)
+
+            # Contrast
+            if np.random.rand() <= _p:
+                _aux = 1 - (np.random.rand() * 0.5)
+                img = TF.adjust_contrast(img, _aux)
+
             # Hflip
             if np.random.rand() <= _p:
-                img = TF.hflip (img)
+                img = TF.hflip(img)
                 mask = TF.hflip(mask)
 
             # Vflip
@@ -58,47 +78,39 @@ class LUNADataset(data.Dataset):
                 mask = TF.vflip(mask)
 
 
-
         general_trans = T.Compose([T.Resize(self.size), T.ToTensor()])
         img = general_trans(img)
         mask = general_trans(mask)
 
-
-
-        exit()
-
         return img, mask
 
 
-def get_luna_dataloaders (base_path, image_size, batch_size, num_workers=16, augmentation_prob=0.5):
+def get_lung_dataloaders (base_path, image_size, batch_size, num_workers=16, augmentation_prob=0.5):
 
     print("-" * 50)
     print("- Loading ISIC dataset..")
 
-    dataset_train = LUNADataset(os.path.join(base_path, "train"),
+    dataset_train = LungDataset(os.path.join(base_path, "train"),
                                 os.path.join(base_path, "train_GT"),
                                 "train",
                                 (image_size, image_size),
                                 prob_aug=augmentation_prob,
-                                mask_suffix='')
-
-    for d in dataset_train:
-        pass
+                                mask_suffix='_mask')
 
 
-    dataset_val = LUNADataset(os.path.join(base_path, "valid"),
+    dataset_val = LungDataset(os.path.join(base_path, "valid"),
                               os.path.join(base_path, "valid_GT"),
                               "valid",
                               (image_size, image_size),
                               prob_aug=augmentation_prob,
-                              mask_suffix='')
+                              mask_suffix='_mask')
 
-    dataset_test = LUNADataset(os.path.join(base_path, "test"),
+    dataset_test = LungDataset(os.path.join(base_path, "test"),
                                os.path.join(base_path, "test_GT"),
                                "test",
                                (image_size, image_size),
                                prob_aug=augmentation_prob,
-                               mask_suffix='')
+                               mask_suffix='_mask')
 
     data_loader_train = data.DataLoader(dataset=dataset_train,
 								        batch_size=batch_size,
@@ -118,3 +130,16 @@ def get_luna_dataloaders (base_path, image_size, batch_size, num_workers=16, aug
     print("-" * 50)
 
     return data_loader_train, data_loader_valid, data_loader_test
+
+
+# base_path = "/home/patcha/Datasets/X-raySeg"
+# image_size = 256
+# dataset_train = LungDataset(os.path.join(base_path, "train"),
+#                                os.path.join(base_path, "train_GT"),
+#                                "train",
+#                                (image_size, image_size),
+#                                prob_aug=1,
+#                                mask_suffix='_mask')
+#
+# for d in dataset_train:
+#     pass

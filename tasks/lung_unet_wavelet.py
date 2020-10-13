@@ -1,7 +1,7 @@
 import sys
 sys.path.append("../")
 import torch
-from source.datasets import get_luna_dataloaders
+from source.datasets import get_lung_dataloaders
 from source.unet import UNet
 from source.pipeline import fit_model, test_model, DiceBCELoss, JacLoss
 import torch.nn as nn
@@ -17,9 +17,9 @@ ex = Experiment()
 @ex.config
 def cnfg():
 
-    _unet_type = "bilinear" # "convtranspose"
-    _model_name = "UNet_" + _unet_type
-    _luna_path = "/home/patcha/Datasets/LUNA/archive/2d/splitted"
+    _kernel_name = 'db2'
+    _model_name = "UNet_wavelet_" + _kernel_name
+    _luna_path = "/home/patcha/Datasets/X-raySeg"
     _save_folder = os.path.join("results", f"{_model_name}_{str(time.time()).replace('.','')}")
     _image_size = 256
 
@@ -34,16 +34,16 @@ def cnfg():
 
     # This is used to configure the sacred storage observer. In brief, it says to sacred to save its stuffs in
     # _save_folder. You don't need to worry about that.
-    SACRED_OBSERVER = FileStorageObserver(_save_folder)
-    ex.observers.append(SACRED_OBSERVER)
+    # SACRED_OBSERVER = FileStorageObserver(_save_folder)
+    # ex.observers.append(SACRED_OBSERVER)
 
 @ex.automain
 def main (_model_name, _luna_path, _save_folder, _image_size, _batch_size, _aug_prob, _lr, _epochs, _loss_type,
-          _epochs_early_stop, _training, _unet_type):
+          _epochs_early_stop, _training):
 
-    train_dl, val_dl, test_dl = get_luna_dataloaders(_luna_path, _image_size, _batch_size, augmentation_prob=_aug_prob)
+    train_dl, val_dl, test_dl = get_lung_dataloaders(_luna_path, _image_size, _batch_size, augmentation_prob=_aug_prob)
 
-    model = UNet(1, 1, upsample_mode=_unet_type)
+    model = UNet(1, 1, upsample_mode="wavelet", downsample_mode="wavelet")
 
     if _loss_type == "dice":
         loss_func = DiceBCELoss()
