@@ -182,7 +182,7 @@ def fit_model (model, train_data_loader, val_data_loader, optimizer=None, loss_f
 
         # Checking the schedule if applicable
         if isinstance(schedule_lr, torch.optim.lr_scheduler.ReduceLROnPlateau):
-            schedule_lr.step(val_metrics[best_metric])
+            schedule_lr.step(best_metric_value)
         elif isinstance(schedule_lr, torch.optim.lr_scheduler.MultiStepLR):
             schedule_lr.step(epoch)
 
